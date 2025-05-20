@@ -47,10 +47,14 @@ class Spectrum():
         self._spectrum_units = spectral_units
         self.spectrum = spectrum
         self.no_outliers = self._remove_outliers()
-        self.smoothed = self._smooth(self.no_outliers)
+        self.smoothed = self._smooth(starting_data=self.no_outliers)
 
-    def _remove_outliers(self, starting_data: np.ndarrya = None):
-        return outlier_removal(self.spectrum)
+    def _remove_outliers(self, starting_data: np.ndarray = None):
+        if starting_data is None:
+            no_outliers, _ = outlier_removal(self.spectrum)
+        else:
+            no_outliers, _ = outlier_removal(starting_data)
+        return no_outliers
 
     def _smooth(self, starting_data: np.ndarray = None):
         if starting_data is None:
@@ -79,7 +83,7 @@ class Spectrum():
         ax=None,
         to_plot: dict = {
             "original": True,
-            "outliers_removed": False,
+            "outliers_removed": True,
             "smooth": True
         }
     ):
@@ -89,10 +93,13 @@ class Spectrum():
             ax.set_ylabel(self._spectrum_units)
 
         if to_plot.get("original"):
-            ax.plot(self.wvls, self.spectrum)
+            ax.plot(self.wvls, self.spectrum, label="Original", alpha=0.6)
 
         if to_plot.get("outliers_removed"):
-            ax.plot(self.wvls, self.no_outliers)
+            ax.plot(
+                self.wvls, self.no_outliers, label="No Outliers", alpha=0.6
+            )
 
         if to_plot.get("smooth"):
-            ax.plot(self.wvls, self.smoothed)
+            ax.plot(self.wvls, self.smoothed, label="Smoothed", alpha=0.6)
+        ax.legend()

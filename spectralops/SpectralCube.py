@@ -5,12 +5,13 @@ import matplotlib.pyplot as plt
 from time import time
 from numba import njit, prange
 
-from spectralops.smoothing import outlier_removal, moving_average
+from spectralops.smoothing import outlier_removal_nb, moving_average_nb
+from spectralops.continuum_removal import double_line_nb
 from spectralops.utils import pretty_print_runtime
 
 
 @njit(parallel=True)
-def apply_over_cube(cube, func):
+def apply_over_cube(cube, func, *args):
     """
     Applies a spectral function over an entire cube.
 
@@ -38,7 +39,7 @@ def apply_over_cube(cube, func):
                 for k in range(nbands):
                     new_cube[i, j, k] = np.nan
             else:
-                new_cube[i, j, :], _ = func(cube[i, j, :])
+                new_cube[i, j, :], _ = func(cube[i, j, :], *args)
     return new_cube
 
 
@@ -89,6 +90,7 @@ class SpectralCube():
 
             self.no_outliers = self.remove_outliers()
             self.smoothed = self.smooth_spectra(self.no_outliers)
+            self.contrem = self.remove_continuum(self.smoothed)
 
             pipeline_runtime = time() - pipeline_start
             pretty_print_runtime(pipeline_runtime, "Pipeline")
@@ -97,9 +99,9 @@ class SpectralCube():
         step_start = time()
 
         if starting_data is None:
-            step = apply_over_cube(self.cube, outlier_removal)
+            step = apply_over_cube(self.cube, outlier_removal_nb)
         else:
-            step = apply_over_cube(starting_data, outlier_removal)
+            step = apply_over_cube(starting_data, outlier_removal_nb)
 
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Outlier removal")
@@ -109,31 +111,48 @@ class SpectralCube():
         step_start = time()
 
         if starting_data is None:
-            step = apply_over_cube(self.cube, moving_average)
+            step = apply_over_cube(self.cube, moving_average_nb)
         else:
-            step = apply_over_cube(starting_data, moving_average)
+            step = apply_over_cube(starting_data, moving_average_nb)
 
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Spectral smoothing")
         return step
 
+    def remove_continuum(self, starting_data=None):
+        step_start = time()
+
+        if starting_data is None:
+            step = apply_over_cube(self.cube, double_line_nb, self.wvl)
+        else:
+            step = apply_over_cube(starting_data, double_line_nb, self.wvl)
+
+        step_runtime = time() - step_start
+        pretty_print_runtime(step_runtime, "Continuum removed")
+        return step
+
     def plot_test_spectrum(self):
-        attr_list = ["cube", "no_outliers", "smoothed"]
+        attr_list = ["cube", "no_outliers", "smoothed", "contrem"]
 
         rng = np.random.default_rng()
         x = rng.integers(0, self.cube.shape[0])
         y = rng.integers(0, self.cube.shape[1])
 
-        fig, ax = plt.subplots()
-        ax.set_title(f"X: {x}, Y: {y}")
+        fig, ax = plt.subplots(1, 2, figsize=(13, 5))
+        fig.suptitle(f"X: {x}, Y: {y}")
 
         for i in attr_list:
             try:
                 dataset = getattr(self, i)
             except AttributeError:
-                pass
+                continue
 
-            ax.plot(self.wvl, dataset[x, y, :], label=i, alpha=0.6)
+            yvals = dataset[x, y, :]
 
-        ax.legend()
+            if i != "contrem":
+                ax[0].plot(self.wvl, yvals, label=i, alpha=0.6)
+            else:
+                ax[1].plot(self.wvl, yvals, label=i, alpha=1)
+
+        ax[0].legend()
         plt.show()
