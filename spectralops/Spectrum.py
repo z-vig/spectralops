@@ -7,10 +7,39 @@ from .smoothing import outlier_removal, moving_average
 
 
 class Spectrum():
+    """
+    Stores information about a single spectrum and allows for single spectrum
+    processing steps.
+
+    Parameters
+    ----------
+    spectrum: np.ndarray
+        Single spectrum data.
+    wvls: np.ndarray
+        Wavelength (in nm) information corresponding to the spectrum.
+    spectral_units: optional, str
+        Units of the spectral data. Default is `"Reflectance"`.
+
+    Attributes
+    ----------
+    wvls: Wavelengths
+    spectrum: Spectrum
+    no_outliers: Spectrum with outliers removed
+    smoothed: Smoothed spectrum with no outliers
+
+    Methods
+    -------
+    to_microns()
+        Converts wavelength units from nm to microns.
+    to_nm()
+        Converts wavelength units from microns to nm.
+    plot(fig, ax, to_plot)
+        Plots all initialized spectral data.
+    """
     def __init__(
         self,
-        wvls: np.ndarray,
         spectrum: np.ndarray,
+        wvls: np.ndarray,
         spectral_units: str = "Reflectance"
     ):
         self.wvls = wvls
@@ -18,13 +47,16 @@ class Spectrum():
         self._spectrum_units = spectral_units
         self.spectrum = spectrum
         self.no_outliers = self._remove_outliers()
-        self.smoothed = self._smooth()
+        self.smoothed = self._smooth(self.no_outliers)
 
-    def _remove_outliers(self):
+    def _remove_outliers(self, starting_data: np.ndarrya = None):
         return outlier_removal(self.spectrum)
 
-    def _smooth(self):
-        mu, sigma, idx = moving_average(self.spectrum)
+    def _smooth(self, starting_data: np.ndarray = None):
+        if starting_data is None:
+            mu, sigma = moving_average(self.spectrum)
+        else:
+            mu, sigma = moving_average(starting_data)
         return mu
 
     def to_microns(self):
