@@ -12,7 +12,14 @@ authors = [
 keywords = ["hyperspectral", "processing", "spectral cube", "image"]
 version = "0.1.0"
 readme = "README.md"
-dynamic = ["dependencies"]
+requires-python = ">=3.13"
+dependencies = [
+    "numpy",
+    "numba",
+    "scipy",
+    "matplotlib"
+]
 
-[tool.setuptools.dynamic]
-dependencies = { file = ["requirements.txt"]}
+[tools.setuptools.packages.find]
+where = ["."]
+include = ["spectralops"]
