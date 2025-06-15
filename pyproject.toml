@@ -1,16 +1,16 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "spectralops"
-description = """Common spectral operations for single spectra and spectral\
-cubes implemented in python."""
+description = "Common spectral operations for single spectra and spectral\
+cubes implemented in python."
 authors = [
     {name = "Zachary M. Vig", email = "zvig@umd.edu"}
 ]
 keywords = ["hyperspectral", "processing", "spectral cube", "image"]
-version = "0.1.0"
+version = "0.0.1"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
