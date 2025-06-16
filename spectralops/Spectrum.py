@@ -22,10 +22,14 @@ class Spectrum():
 
     Attributes
     ----------
-    wvls: Wavelengths
-    spectrum: Spectrum
-    no_outliers: Spectrum with outliers removed
-    smoothed: Smoothed spectrum with no outliers
+    wvls: 1-D Array
+        Wavelengths
+    spectrum: 1-D Array
+        Spectrum
+    no_outliers: 1-D Array
+        Spectrum with outliers removed
+    smoothed: 1-D Array
+        Smoothed spectrum with no outliers
 
     Methods
     -------
@@ -48,6 +52,7 @@ class Spectrum():
         self.spectrum = spectrum
         self.no_outliers = self._remove_outliers()
         self.smoothed = self._smooth(starting_data=self.no_outliers)
+        self.nbands = spectrum.size
 
     def _remove_outliers(self, starting_data: np.ndarray = None):
         if starting_data is None:
@@ -87,6 +92,23 @@ class Spectrum():
             "smooth": True
         }
     ):
+        """
+        Plots the original and processed spectra.
+
+        Parameters
+        ----------
+        fig: Figure
+            Matplotlib figure object to add the plot to.
+        axis: Axis
+            Axis within `fig` to plot into.
+        to_plot: dict
+            Options dictionary for which spectra to plot. If the value of the
+            key is True, it will be added to the plot:
+
+            - original: Original specturm
+            - outliers_removed: No outliers
+            - smooth: Moving average applied
+        """
         if (fig is None) or (ax is None):
             fig, ax = plt.subplots(1, 1)
             ax.set_xlabel(f"Wavelength ({self._wavelength_units})")

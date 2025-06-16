@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spectralops"
-description = "Common spectral operations for single spectra and spectral\
-cubes implemented in python."
+description = """Common spectral operations for single spectra and spectral\
+cubes implemented in python."""
 authors = [
     {name = "Zachary M. Vig", email = "zvig@umd.edu"}
 ]
