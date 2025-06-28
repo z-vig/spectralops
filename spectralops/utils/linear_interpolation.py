@@ -5,7 +5,11 @@ from numba import njit
 
 
 @njit
-def linear_interpolation(x_pts, y_pts, interp_x):
+def linear_interpolation(
+    x_pts: np.ndarray,
+    y_pts: np.ndarray,
+    interp_x: np.ndarray
+):
     interp = np.zeros(interp_x.size, dtype=np.float64)
     slopes = np.empty(x_pts.size-1)
     intercepts = np.empty(x_pts.size-1)

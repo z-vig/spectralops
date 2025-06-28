@@ -24,11 +24,15 @@ class Spectrum():
         Wavelength (in nm) information corresponding to the spectrum.
     spectral_units: optional, str
         Units of the spectral data. Default is `"Reflectance"`.
+    spectral_resolution: optional, Union[None, float, np.ndarray]
 
     Attributes
     ----------
     wvls: 1-D Array
         Wavelengths
+    spec_res: Union[float, 1-D Array]
+        Spectral resolution. Either constant or by band. If None, a constant
+        resolution will be calculated from wavelength data.
     spectrum: 1-D Array
         Spectrum
     no_outliers: 1-D Array
@@ -49,7 +53,8 @@ class Spectrum():
         self,
         spectrum: np.ndarray,
         wvls: np.ndarray,
-        spectral_units: str = "Reflectance"
+        spectral_units: str = "Reflectance",
+        spectral_resolution: Union[None, np.ndarray, float] = None
     ):
         self.wvls = wvls
         self._wavelength_units = "nm"
@@ -58,6 +63,11 @@ class Spectrum():
         self.no_outliers = self._remove_outliers()
         self.smoothed = self._smooth(starting_data=self.no_outliers)
         self.nbands = spectrum.size
+
+        if spectral_resolution is None:
+            self.spec_res = (wvls.max() - wvls.min()) / wvls.size
+        else:
+            self.spec_res = spectral_resolution
 
     def _remove_outliers(self, starting_data: Union[np.ndarray, None] = None):
         if starting_data is None:

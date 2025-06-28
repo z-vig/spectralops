@@ -17,10 +17,12 @@ from . import smoothing
 from . import continuum_removal
 from .spectrum import Spectrum
 from .spectral_cube import SpectralCube
+from . import utils
 
 __all__ = [
-    smoothing,
-    continuum_removal,
-    Spectrum,
-    SpectralCube
+    "smoothing",
+    "continuum_removal",
+    "Spectrum",
+    "SpectralCube",
+    "utils"
 ]
