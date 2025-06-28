@@ -1,8 +1,13 @@
 # Spectrum.py
 
+# Standard Libraries
+from typing import Union
+
+# External Imports
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Local Imports
 from .smoothing import outlier_removal, moving_average
 
 
@@ -54,14 +59,14 @@ class Spectrum():
         self.smoothed = self._smooth(starting_data=self.no_outliers)
         self.nbands = spectrum.size
 
-    def _remove_outliers(self, starting_data: np.ndarray = None):
+    def _remove_outliers(self, starting_data: Union[np.ndarray, None] = None):
         if starting_data is None:
             no_outliers, _ = outlier_removal(self.spectrum)
         else:
             no_outliers, _ = outlier_removal(starting_data)
         return no_outliers
 
-    def _smooth(self, starting_data: np.ndarray = None):
+    def _smooth(self, starting_data: Union[np.ndarray, None] = None):
         if starting_data is None:
             mu, sigma = moving_average(self.spectrum)
         else:
