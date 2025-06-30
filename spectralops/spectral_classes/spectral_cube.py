@@ -67,9 +67,9 @@ class SpectralCube():
             print("Running spectral processing pipeline...")
             pipeline_start = time()
 
-            self.no_outliers = self.remove_outliers()
-            self.smoothed = self.smooth_spectra(self.no_outliers)
-            self.contrem = self.remove_continuum(self.smoothed)
+            self.no_outliers, _ = self.remove_outliers()
+            self.smoothed, self.err = self.smooth_spectra(self.no_outliers)
+            self.contrem, self.continuum = self.remove_continuum(self.smoothed)
 
             pipeline_runtime = time() - pipeline_start
             pretty_print_runtime(pipeline_runtime, "Pipeline")
@@ -88,7 +88,7 @@ class SpectralCube():
 
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Outlier removal")
-        return step
+        return step[:, :, :, 0], None
 
     def smooth_spectra(self, starting_data=None):
         step_start = time()
@@ -104,7 +104,7 @@ class SpectralCube():
 
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Spectral smoothing")
-        return step
+        return step[:, :, :, 0], step[:, :, :, 1]
 
     def remove_continuum(self, starting_data=None):
         step_start = time()
@@ -120,7 +120,7 @@ class SpectralCube():
 
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Continuum removal")
-        return step
+        return step[:, :, :, 0], step[:, :, :, 1]
 
     def plot_test_spectrum(self):
         attr_list = ["cube", "no_outliers", "smoothed", "contrem"]

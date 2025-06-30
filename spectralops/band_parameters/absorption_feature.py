@@ -4,15 +4,16 @@
 from typing import Tuple
 
 # External Imports
-# import numpy as np
+import numpy as np
 
 # Local Imports
-from spectralops import Spectrum
-from spectralops import SpectralCube
+from spectralops.spectral_classes import Spectrum
+from spectralops.spectral_classes import SpectralCube
 
 from .fit_absorption import fit_absorption
 from . calculate_area import calculate_area
 from .calculate_center import calculate_center
+from .calculate_depth import calculate_depth
 
 from spectralops.utils import apply_over_cube
 
@@ -71,6 +72,13 @@ class AbsorptionFeature():
             absorption_wvl=self.wvl
         )
 
+        self.depth = calculate_depth(
+            wvl=spectrum.wvl,
+            fitted_absorption=self.polyfit,
+            absorption_spec=self.spectrum,
+            absorption_wvl=self.wvl
+        )
+
 
 class AbsorptionFeatureCube():
     def __init__(
@@ -81,22 +89,43 @@ class AbsorptionFeatureCube():
         self._original_spec = spectral_cube
         self._wvl_search_range = wvl_search_range
 
+        fit_order = 4
+
         self.polyfit, self.cube, self.wvl = \
             fit_absorption(
                 spectral_cube.contrem,
                 spectral_cube.wvl,
                 self._wvl_search_range,
-                4
+                fit_order
             )
+        print(f"Polynomial of order {fit_order} was fit to feature.")
 
-        self.area = apply_over_cube(
-            spectral_cube.contrem, calculate_area, 1,
-            spectral_cube.wvl, self._wvl_search_range, spectral_cube.spec_res
+        area = apply_over_cube(
+            spectral_cube.smoothed, calculate_area, 1,
+            spectral_cube.wvl, *self._wvl_search_range, spectral_cube.spec_res
         )
+        print("Feature area was calculated.")
 
-        self.center = calculate_center(
+        center = calculate_center(
             wvl=spectral_cube.wvl,
             fitted_absorption=self.polyfit,
             absorption_spec=self.cube,
             absorption_wvl=self.wvl
         )
+        print("Feature center was calculated.")
+
+        depth = calculate_depth(
+            wvl=spectral_cube.wvl,
+            fitted_absorption=self.polyfit,
+            absorption_spec=self.cube,
+            absorption_wvl=self.wvl
+        )
+        print("Feature depth was calculated.")
+
+        # Ensuring type stability.
+        if isinstance(area, np.ndarray):
+            self.area = area
+        if isinstance(center, np.ndarray):
+            self.center = center
+        if isinstance(depth, np.ndarray):
+            self.depth = depth

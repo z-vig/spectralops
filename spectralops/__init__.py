@@ -16,16 +16,19 @@ Python.
 from . import smoothing
 from . import continuum_removal
 from . import band_parameters
-from .spectrum import Spectrum
-from .spectral_cube import SpectralCube, apply_over_cube
+from .band_parameters import AbsorptionFeature, AbsorptionFeatureCube
+from .spectral_classes import Spectrum
+from .spectral_classes import SpectralCube, apply_over_cube
 from . import utils
 
 __all__ = [
+    "Spectrum",
+    "SpectralCube",
+    "AbsorptionFeature",
+    "AbsorptionFeatureCube",
     "smoothing",
     "continuum_removal",
     "band_parameters",
-    "Spectrum",
-    "SpectralCube",
     "apply_over_cube",
     "utils"
 ]

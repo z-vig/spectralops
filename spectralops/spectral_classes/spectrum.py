@@ -8,8 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Local Imports
-from .smoothing import outlier_removal, moving_average
-from .continuum_removal import double_line_nb
+from spectralops.smoothing import outlier_removal, moving_average
+from spectralops.continuum_removal import double_line_nb
 
 
 class Spectrum():

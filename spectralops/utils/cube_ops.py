@@ -36,7 +36,9 @@ def apply_over_cube(cube, func, output_size, *args) -> np.ndarray:
 
     xsize, ysize, nbands = cube.shape
 
-    analysis_result = np.empty((xsize, ysize, output_size), dtype=cube.dtype)
+    analysis_result = np.empty(
+        (xsize, ysize, output_size, 2), dtype=cube.dtype
+    )
 
     for i in prange(xsize):
         for j in prange(ysize):
@@ -44,6 +46,8 @@ def apply_over_cube(cube, func, output_size, *args) -> np.ndarray:
                 for k in range(nbands):
                     analysis_result[i, j, k] = np.nan
             else:
-                analysis_result[i, j, :], _ = func(cube[i, j, :], *args)
+                result = func(cube[i, j, :], *args)
+                analysis_result[i, j, :, 0] = result[0]
+                analysis_result[i, j, :, 1] = result[1]
 
     return analysis_result

@@ -11,7 +11,7 @@ from spectralops.utils import round_to_odd
 def outlier_removal_nb(
     original_spectrum: np.ndarray,
     threshold: float = 2
-) -> tuple[np.ndarray, None]:
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Numba-optimized version of `outlier_removal`.
 
@@ -80,7 +80,7 @@ def outlier_removal_nb(
 
     spectrum[outlier_idx] = replacement[outlier_idx]
 
-    return spectrum, None
+    return spectrum, np.full(spectrum.shape, np.nan)
 
 
 def outlier_removal(

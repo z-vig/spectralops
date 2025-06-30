@@ -4,7 +4,7 @@
 import numpy as np
 
 # Local Imports
-from spectralops.spectrum import Spectrum
+from spectralops.spectral_classes.spectrum import Spectrum
 from .endmember import EndMember
 
 
