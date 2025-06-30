@@ -1,8 +1,10 @@
 # find_wvl.py
 
 import numpy as np
+from numba import njit
 
 
+@njit
 def find_wvl(wvls: np.ndarray, targetwvl: float):
     """
         findλ(λ.targetλ)
@@ -25,5 +27,5 @@ def find_wvl(wvls: np.ndarray, targetwvl: float):
         Actual wavelength that is closest to the target wavelength (at idx).
     """
 
-    idx = np.argmin(abs(wvls - targetwvl))
+    idx = np.argmin(np.abs(wvls - targetwvl))
     return idx, wvls[idx]

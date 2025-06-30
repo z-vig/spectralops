@@ -1,46 +1,18 @@
 # SpectralCube.py
 
+# Standard Libraries
+from typing import Union
+
+# External Imports
 import numpy as np
 import matplotlib.pyplot as plt
 from time import time
-from numba import njit, prange
 
+# Local Imports
 from spectralops.smoothing import outlier_removal_nb, moving_average_nb
 from spectralops.continuum_removal import double_line_nb
 from spectralops.utils import pretty_print_runtime
-
-
-@njit(parallel=True)
-def apply_over_cube(cube, func, *args):
-    """
-    Applies a spectral function over an entire cube.
-
-    Parameters
-    ----------
-    cube: np.ndarray
-        Spectral image cube to modify via `func`. Spectral dimension must be
-        in the third axis.
-    func: Callable
-        Function that will be applied to the cube. The first argument must be
-        a single spectrum and the first return must be the modified spectrum.
-        Other required arguments can be passed via `*args` and other returns
-        will be ignored.
-    *args
-        Remaining arguments to be passed to `func`.
-    """
-
-    xsize, ysize, nbands = cube.shape
-
-    new_cube = np.empty_like(cube)
-
-    for i in prange(xsize):
-        for j in prange(ysize):
-            if np.isnan(cube[i, j, 0]):
-                for k in range(nbands):
-                    new_cube[i, j, k] = np.nan
-            else:
-                new_cube[i, j, :], _ = func(cube[i, j, :], *args)
-    return new_cube
+from spectralops.utils import apply_over_cube
 
 
 class SpectralCube():
@@ -74,15 +46,22 @@ class SpectralCube():
     smooth_spectra(starting_data=None)
         Smooths spectra in the starting_data (or `cube` attribute if
         `starting_data` is None).
+    plot_test_spectrum()
+        Plots a random test spectrum from within the cube.
     """
     def __init__(
         self,
         cube: np.ndarray,
         wvl: np.ndarray,
+        spectral_resolution: Union[None, np.ndarray, float] = None,
         init_pipeline: bool = False
     ):
         self.cube = cube
         self.wvl = wvl
+        if spectral_resolution is None:
+            self.spec_res = (wvl.max() - wvl.min()) / wvl.size
+        else:
+            self.spec_res = spectral_resolution
 
         if init_pipeline:
             print("Running spectral processing pipeline...")
@@ -99,9 +78,13 @@ class SpectralCube():
         step_start = time()
 
         if starting_data is None:
-            step = apply_over_cube(self.cube, outlier_removal_nb)
+            step = apply_over_cube(
+                self.cube, outlier_removal_nb, self.wvl.size
+            )
         else:
-            step = apply_over_cube(starting_data, outlier_removal_nb)
+            step = apply_over_cube(
+                starting_data, outlier_removal_nb, self.wvl.size
+            )
 
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Outlier removal")
@@ -111,9 +94,13 @@ class SpectralCube():
         step_start = time()
 
         if starting_data is None:
-            step = apply_over_cube(self.cube, moving_average_nb)
+            step = apply_over_cube(
+                self.cube, moving_average_nb, self.wvl.size
+            )
         else:
-            step = apply_over_cube(starting_data, moving_average_nb)
+            step = apply_over_cube(
+                starting_data, moving_average_nb, self.wvl.size
+            )
 
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Spectral smoothing")
@@ -123,12 +110,16 @@ class SpectralCube():
         step_start = time()
 
         if starting_data is None:
-            step = apply_over_cube(self.cube, double_line_nb, self.wvl)
+            step = apply_over_cube(
+                self.cube, double_line_nb, self.wvl.size, self.wvl
+            )
         else:
-            step = apply_over_cube(starting_data, double_line_nb, self.wvl)
+            step = apply_over_cube(
+                starting_data, double_line_nb, self.wvl.size, self.wvl
+            )
 
         step_runtime = time() - step_start
-        pretty_print_runtime(step_runtime, "Continuum removed")
+        pretty_print_runtime(step_runtime, "Continuum removal")
         return step
 
     def plot_test_spectrum(self):
@@ -140,6 +131,10 @@ class SpectralCube():
 
         fig, ax = plt.subplots(1, 2, figsize=(13, 5))
         fig.suptitle(f"X: {x}, Y: {y}")
+        ax[0].set_ylabel("Reflectance")
+        ax[0].set_xlabel("Wavelength")
+        ax[1].set_ylabel("Continuum-Removed Reflectance")
+        ax[1].set_xlabel("Wavelength")
 
         for i in attr_list:
             try:

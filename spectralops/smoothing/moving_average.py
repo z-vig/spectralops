@@ -9,7 +9,7 @@ from spectralops.utils import fit_line, get_options_errors
 @njit
 def moving_average_nb(
     original_spectrum: np.ndarray,
-    window_size: int = 5,
+    window_size: int = 5
 ):
     """
     Numba-optimized version of `moving_average`.
@@ -67,11 +67,9 @@ def moving_average_nb(
     musq = np.convolve(spectrum**2, window)[endcap_size:-endcap_size]\
         / window.size
     sigma = np.sqrt(musq - mu**2)
-    # spectrum_idx = np.arange(0, len(spectrum))
 
     mu = mu[window_size:-window_size]
     sigma = sigma[window_size:-window_size]
-    # spectrum_idx = spectrum_idx[window_size:-window_size]
 
     return mu, sigma
 
@@ -156,12 +154,13 @@ def moving_average(
         mu = mu[window_size:-window_size]
         sigma = sigma[window_size:-window_size]
         spectrum_idx = spectrum_idx[window_size:-window_size]
+
     elif edge_handling == "fill_ends":
         mu[:endcap_size] = spectrum[:endcap_size]
         mu[-endcap_size:] = spectrum[-endcap_size:]
-
         sigma[:endcap_size] = 0
         sigma[-endcap_size:] = 0
+
     elif edge_handling == "cut_ends":
         mu = mu[endcap_size:-endcap_size]
         sigma = sigma[endcap_size:-endcap_size]

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 
 # Local Imports
 from .smoothing import outlier_removal, moving_average
+from .continuum_removal import double_line_nb
 
 
 class Spectrum():
@@ -56,12 +57,13 @@ class Spectrum():
         spectral_units: str = "Reflectance",
         spectral_resolution: Union[None, np.ndarray, float] = None
     ):
-        self.wvls = wvls
+        self.wvl = wvls
         self._wavelength_units = "nm"
         self._spectrum_units = spectral_units
         self.spectrum = spectrum
         self.no_outliers = self._remove_outliers()
         self.smoothed = self._smooth(starting_data=self.no_outliers)
+        self.contrem = self._remove_continuum(starting_data=self.smoothed)
         self.nbands = spectrum.size
 
         if spectral_resolution is None:
@@ -83,16 +85,23 @@ class Spectrum():
             mu, sigma = moving_average(starting_data)
         return mu
 
+    def _remove_continuum(self, starting_data: Union[np.ndarray, None] = None):
+        if starting_data is None:
+            contrem, continuum = double_line_nb(self.spectrum, self.wvl)
+        else:
+            contrem, continuum = double_line_nb(starting_data, self.wvl)
+        return contrem
+
     def to_microns(self):
         if self._wavelength_units == "nm":
-            self.wvls /= 1000
+            self.wvl /= 1000
             self._wavelength_units = "\u03BCm"
         else:
             print("Wavelengths already in microns.")
 
     def to_nm(self):
         if self._wavelength_units == "\u03BCm":
-            self.wvls *= 1000
+            self.wvl *= 1000
             self._wavelength_units = "nm"
         else:
             print("Wavelengths already in nm.")
@@ -130,13 +139,13 @@ class Spectrum():
             ax.set_ylabel(self._spectrum_units)
 
         if to_plot.get("original"):
-            ax.plot(self.wvls, self.spectrum, label="Original", alpha=0.6)
+            ax.plot(self.wvl, self.spectrum, label="Original", alpha=0.6)
 
         if to_plot.get("outliers_removed"):
             ax.plot(
-                self.wvls, self.no_outliers, label="No Outliers", alpha=0.6
+                self.wvl, self.no_outliers, label="No Outliers", alpha=0.6
             )
 
         if to_plot.get("smooth"):
-            ax.plot(self.wvls, self.smoothed, label="Smoothed", alpha=0.6)
+            ax.plot(self.wvl, self.smoothed, label="Smoothed", alpha=0.6)
         ax.legend()
