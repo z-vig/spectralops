@@ -8,6 +8,8 @@ from .polyfit import polyfit
 from .cube_ops import apply_over_cube
 from .create_synthetic_spectra import create_synthetic_spectral_cube
 from .create_synthetic_spectra import create_synthetic_lunar_spectrum
+from .normalize_image import normalize_image
+from .rgb_composite import rgb_composite
 
 __all__ = [
     "find_wvl",
@@ -19,5 +21,7 @@ __all__ = [
     "polyfit",
     "apply_over_cube",
     "create_synthetic_spectral_cube",
-    "create_synthetic_lunar_spectrum"
+    "create_synthetic_lunar_spectrum",
+    "normalize_image",
+    "rgb_composite"
 ]

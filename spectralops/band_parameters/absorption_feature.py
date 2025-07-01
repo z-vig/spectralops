@@ -1,10 +1,11 @@
 # band_parameters/absorption_band_stats.py
 
 # Standard Libraries
-from typing import Tuple
+from typing import Tuple, Optional
 
 # External Imports
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Local Imports
 from spectralops.spectral_classes import Spectrum
@@ -16,6 +17,7 @@ from .calculate_center import calculate_center
 from .calculate_depth import calculate_depth
 
 from spectralops.utils import apply_over_cube
+from spectralops.utils import rgb_composite
 
 
 class AbsorptionFeature():
@@ -103,7 +105,7 @@ class AbsorptionFeatureCube():
         area = apply_over_cube(
             spectral_cube.smoothed, calculate_area, 1,
             spectral_cube.wvl, *self._wvl_search_range, spectral_cube.spec_res
-        )
+        )[:, :, 0, 0]
         print("Feature area was calculated.")
 
         center = calculate_center(
@@ -129,3 +131,108 @@ class AbsorptionFeatureCube():
             self.center = center
         if isinstance(depth, np.ndarray):
             self.depth = depth
+
+    def plot_test_spectrum(
+        self,
+        xtest: Optional[int] = None,
+        ytest: Optional[int] = None,
+        ax: Optional[np.ndarray] = None,
+        feature_only: bool = False,
+        feature_name: Optional[str] = None
+    ):
+        """
+        Plots a test spectrum, with all band parameter information shown.
+
+        Parameters
+        ----------
+        xtest: int, optional
+            Test X coordinate. If None (default), it is randomly chosen.
+        ytest: int, optional
+            Test X coordinate. If None (default), it is randomly chosen.
+        ax: array of Axes, optional
+            List of 2 axes to plot the spectrum and continuumed-removed
+            spectrm into, respectively. If None (default) a new figure is
+            generated.
+        feature_only: bool, optional
+            If False (default), both the original spectrum and the absorption
+            feature are plotted. If True, only the feature is plotted.
+        feature_name: str, optional
+            Name of the feature. If None (default), no name will be listed.
+        """
+        rng = np.random.default_rng()
+        if (xtest is None) or (ytest is None):
+            xtest = rng.integers(0, self.polyfit.shape[0])
+            ytest = rng.integers(0, self.polyfit.shape[1])
+
+        if ax is None:
+            fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+            assert isinstance(ax, np.ndarray)
+
+        if not feature_only:
+            # Original Whole Spectrum
+            ax[0].plot(
+                self._original_spec.wvl,
+                self._original_spec.cube[xtest, ytest, :],
+                color="k"
+            )
+
+            # Smoothed Whole Spectrum
+            ax[0].plot(
+                self._original_spec.wvl,
+                self._original_spec.smoothed[xtest, ytest, :],
+                color="red"
+            )
+
+            # Continuum Removed Whole Spectrum
+            ax[1].plot(
+                self._original_spec.wvl,
+                self._original_spec.contrem[xtest, ytest, :],
+                color="k"
+            )
+
+        # Continuum Removed Absorption Feature Fit
+        ax[1].plot(
+            self.wvl,
+            self.polyfit[xtest, ytest, :],
+            color="red"
+        )
+
+        # Marker for absorption depth
+        ax[1].vlines(
+            self.center[xtest, ytest],
+            1-self.depth[xtest, ytest], 1,
+            color="blue", linestyle='--'
+        )
+
+        # Marker for continuum
+        ax[1].hlines(
+            1,
+            self._original_spec.wvl.min(), self._original_spec.wvl.max(),
+            color="blue", linestyle="--"
+        )
+
+        ax[0].set_title(f"Plotted Point: ({xtest}, {ytest})")
+
+        if feature_only:
+            ax[1].set_title(ax[1].get_title() +
+                            f"   {feature_name} Depth: "
+                            f"{self.depth[xtest, ytest]:.4f}")
+        else:
+            ax[1].set_title(f"{feature_name} Depth: "
+                            f"{self.depth[xtest, ytest]:.4f}")
+
+    def false_color_composite(
+        self,
+        red_band_attribute: str,
+        green_band_attribute: str,
+        blue_band_attrbiute: str
+    ) -> np.ndarray:
+        """
+        Creates an RGB false color composite image from three image-like
+        attributes.
+        """
+        r = getattr(self, red_band_attribute)
+        g = getattr(self, green_band_attribute)
+        b = getattr(self, blue_band_attrbiute)
+
+        return rgb_composite(r, g, b)

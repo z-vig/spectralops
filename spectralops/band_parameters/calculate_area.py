@@ -53,4 +53,4 @@ def calculate_area(
 
     area = np.array([np.sum(area_components)])
 
-    return area, area_components
+    return area, np.full(area.shape, np.nan)

@@ -69,7 +69,7 @@ def polyfit_single_nb(
     X: np.ndarray,
     Xt: np.ndarray,
     XtX: np.ndarray
-) -> tuple[np.ndarray, None]:
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Fits a polynomial of order `N` to `x` and `y` data. Optionally can be used
     in a loop by specifying the `design_matrix` elements.
@@ -88,7 +88,9 @@ def polyfit_single_nb(
     """
     beta = np.linalg.inv(XtX) @ (Xt @ spectrum)
 
-    return X @ beta, None
+    fit_line = X @ beta
+
+    return fit_line, np.full(fit_line.shape, np.nan)
 
 
 def polyfit_spectral_cube(
@@ -123,7 +125,7 @@ def polyfit_spectral_cube(
     fit_cube = apply_over_cube(
         spectral_cube, polyfit_single_nb, wvl.size,
         *design_matrices
-    )
+    )[:, :, :, 0]
 
     return fit_cube
 
