@@ -74,7 +74,7 @@ def apply_remove_outliers_over_cube(cube):
                     analysis_result[i, j, k] = np.nan
             else:
                 result = outlier_removal_nb(cube[i, j, :])
-                analysis_result[i, j, :] = result[0]
+                analysis_result[i, j, :] = result
 
     return analysis_result
 
