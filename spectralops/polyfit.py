@@ -8,7 +8,7 @@ import numpy as np
 from numba import njit
 
 # Local imports
-from .cube_ops import apply_over_cube
+from .cube_ops import apply_polyfit_over_cube
 
 
 def polyfit_single(
@@ -118,15 +118,11 @@ def polyfit_spectral_cube(
         Either a cube of fitted coefficients or fitted lines.
     """
     X = np.vander(wvl, order + 1)
-    Xt = X.T
+    Xt = np.ascontiguousarray(X.T)
     XtX = Xt @ X
     design_matrices = (X, Xt, XtX)
 
-    fit_cube = apply_over_cube(
-        spectral_cube, polyfit_single_nb, wvl.size,
-        *design_matrices
-    )[:, :, :, 0]
-
+    fit_cube = apply_polyfit_over_cube(spectral_cube, *design_matrices)
     return fit_cube
 
 

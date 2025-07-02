@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 from time import time
 
 # Local Imports
-from spectralops.smoothing import outlier_removal_nb, moving_average_nb
-from spectralops.continuum_removal import double_line_nb
 from spectralops.utils import pretty_print_runtime
-from spectralops.utils import apply_over_cube
+from spectralops.cube_ops import apply_remove_outliers_over_cube
+from spectralops.cube_ops import apply_smoothing_over_cube
+from spectralops.cube_ops import apply_continuum_removal_over_cube
 
 
 class SpectralCube():
@@ -67,7 +67,7 @@ class SpectralCube():
             print("Running spectral processing pipeline...")
             pipeline_start = time()
 
-            self.no_outliers, _ = self.remove_outliers()
+            self.no_outliers = self.remove_outliers()
             self.smoothed, self.err = self.smooth_spectra(self.no_outliers)
             self.contrem, self.continuum = self.remove_continuum(self.smoothed)
 
@@ -78,29 +78,21 @@ class SpectralCube():
         step_start = time()
 
         if starting_data is None:
-            step = apply_over_cube(
-                self.cube, outlier_removal_nb, self.wvl.size
-            )
+            step = apply_remove_outliers_over_cube(self.cube)
         else:
-            step = apply_over_cube(
-                starting_data, outlier_removal_nb, self.wvl.size
-            )
+            step = apply_remove_outliers_over_cube(starting_data)
 
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Outlier removal")
-        return step[:, :, :, 0], None
+        return step
 
     def smooth_spectra(self, starting_data=None):
         step_start = time()
 
         if starting_data is None:
-            step = apply_over_cube(
-                self.cube, moving_average_nb, self.wvl.size
-            )
+            step = apply_smoothing_over_cube(self.cube)
         else:
-            step = apply_over_cube(
-                starting_data, moving_average_nb, self.wvl.size
-            )
+            step = apply_smoothing_over_cube(starting_data)
 
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Spectral smoothing")
@@ -110,13 +102,9 @@ class SpectralCube():
         step_start = time()
 
         if starting_data is None:
-            step = apply_over_cube(
-                self.cube, double_line_nb, self.wvl.size, self.wvl
-            )
+            step = apply_continuum_removal_over_cube(self.cube, self.wvl)
         else:
-            step = apply_over_cube(
-                starting_data, double_line_nb, self.wvl.size, self.wvl
-            )
+            step = apply_continuum_removal_over_cube(starting_data, self.wvl)
 
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Continuum removal")

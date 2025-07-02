@@ -3,7 +3,7 @@
 import numpy as np
 from numba import njit
 
-from spectralops.utils import fit_line, get_options_errors
+import spectralops.utils as utils
 
 
 @njit
@@ -43,13 +43,13 @@ def moving_average_nb(
         dtype=np.int32
     )
 
-    left_fit = fit_line(
+    left_fit = utils.fit_line(
         left_idx,
         original_spectrum[left_idx],
         np.arange(-window_size, 0)
     )
 
-    right_fit = fit_line(
+    right_fit = utils.fit_line(
         right_idx,
         original_spectrum[right_idx],
         np.arange(len(original_spectrum), len(original_spectrum) + window_size)
@@ -107,7 +107,7 @@ def moving_average(
     edge_handling_cases = ["mirror", "extrapolate", "fill_ends", "cut_ends"]
     if edge_handling not in edge_handling_cases:
         raise ValueError(
-            get_options_errors(
+            utils.get_options_errors(
                 edge_handling, edge_handling_cases, option_name="edge handler"
             )
         )

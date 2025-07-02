@@ -10,13 +10,13 @@ import matplotlib.pyplot as plt
 # Local Imports
 from spectralops.spectral_classes import Spectrum
 from spectralops.spectral_classes import SpectralCube
+from spectralops.cube_ops import apply_calculate_area_over_cube
 
 from .fit_absorption import fit_absorption
-from . calculate_area import calculate_area
+from .calculate_area import calculate_area
 from .calculate_center import calculate_center
 from .calculate_depth import calculate_depth
 
-from spectralops.utils import apply_over_cube
 from spectralops.utils import rgb_composite
 
 
@@ -60,7 +60,7 @@ class AbsorptionFeature():
                 4
             )
 
-        self.area, self._area_components = calculate_area(
+        self.area = calculate_area(
             spectrum.contrem,
             spectrum.wvl,
             *self._wvl_search_range,
@@ -102,10 +102,12 @@ class AbsorptionFeatureCube():
             )
         print(f"Polynomial of order {fit_order} was fit to feature.")
 
-        area = apply_over_cube(
-            spectral_cube.smoothed, calculate_area, 1,
-            spectral_cube.wvl, *self._wvl_search_range, spectral_cube.spec_res
-        )[:, :, 0, 0]
+        area = apply_calculate_area_over_cube(
+            spectral_cube.contrem,
+            spectral_cube.wvl,
+            spectral_cube.spec_res,
+            *self._wvl_search_range
+        )
         print("Feature area was calculated.")
 
         center = calculate_center(

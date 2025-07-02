@@ -18,7 +18,7 @@ def calculate_area(
     wvl_search_low: float,
     wvl_search_high: float,
     spectral_resolution: Union[float, np.ndarray]
-) -> tuple[np.ndarray, np.ndarray]:
+) -> float:
     """
     Calculates the area of the absorption band below the spectral continuum.
     This operation is performed by taking the difference between the value at
@@ -51,6 +51,6 @@ def calculate_area(
 
     area_components = (1 - contrem_spectrum[wvl_indices]) * spectral_resolution
 
-    area = np.array([np.sum(area_components)])
+    area = np.sum(area_components)
 
-    return area, np.full(area.shape, np.nan)
+    return area

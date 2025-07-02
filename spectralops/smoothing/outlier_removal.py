@@ -4,14 +4,14 @@ import numpy as np
 from numba import njit
 
 from .moving_average import moving_average_nb, moving_average
-from spectralops.utils import round_to_odd
+import spectralops.utils as utils
 
 
 @njit
 def outlier_removal_nb(
     original_spectrum: np.ndarray,
     threshold: float = 2
-) -> tuple[np.ndarray, np.ndarray]:
+) -> np.ndarray:
     """
     Numba-optimized version of `outlier_removal`.
 
@@ -80,7 +80,7 @@ def outlier_removal_nb(
 
     spectrum[outlier_idx] = replacement[outlier_idx]
 
-    return spectrum, np.full(spectrum.shape, np.nan)
+    return spectrum
 
 
 def outlier_removal(
@@ -132,7 +132,7 @@ def outlier_removal(
     """
     spectrum = np.copy(original_spectrum)
 
-    window_size = max(round_to_odd(len(spectrum) * 0.1), 3)
+    window_size = max(utils.round_to_odd(len(spectrum) * 0.1), 3)
 
     mu, sig = moving_average(spectrum, window_size=window_size)
 

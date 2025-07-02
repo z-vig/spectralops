@@ -4,7 +4,8 @@
 import numpy as np
 
 # Local Imports
-from spectralops.utils import find_wvl, polyfit
+from spectralops.utils import find_wvl
+from spectralops.polyfit import polyfit
 
 
 def fit_absorption(
