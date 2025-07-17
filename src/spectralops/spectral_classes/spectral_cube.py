@@ -34,6 +34,9 @@ class SpectralCube():
         If None (default), a constant resolution will be calculated.
     init_pipeline: bool, optional
         Switch to enable running the pipeline at initialization.
+    bands_first: bool, optional
+        If True, the spectral domain is assumed to be in the first axis of
+        the array.
 
     Attributes
     ----------
@@ -61,9 +64,13 @@ class SpectralCube():
         wvl: np.ndarray,
         pixel_mask: Optional[np.ndarray] = None,
         spectral_resolution: Union[None, np.ndarray, float] = None,
-        init_pipeline: bool = False
+        init_pipeline: bool = False,
+        bands_first: bool = False
     ):
-        self.cube = cube
+        if bands_first:
+            self.cube = np.moveaxis(cube, 0, 2)
+        else:
+            self.cube = cube
         self.wvl = wvl
         self.mask = pixel_mask
         if spectral_resolution is None:
