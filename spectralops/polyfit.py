@@ -16,7 +16,7 @@ def polyfit_single(
     wvl: Union[None, np.ndarray],
     order: Union[None, int],
     design_matrices: Optional[tuple[np.ndarray, ...]] = None,
-    return_coefficients: bool = True
+    return_coefficients: bool = False
 ) -> np.ndarray:
     """
     Fits a polynomial of order `N` to `x` and `y` data. Optionally can be used

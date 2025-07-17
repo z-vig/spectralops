@@ -63,7 +63,9 @@ class Spectrum():
         self.spectrum = spectrum
         self.no_outliers = self._remove_outliers()
         self.smoothed = self._smooth(starting_data=self.no_outliers)
-        self.contrem = self._remove_continuum(starting_data=self.smoothed)
+        self.contrem, self.continuum = self._remove_continuum(
+            starting_data=self.smoothed
+        )
         self.nbands = spectrum.size
 
         if spectral_resolution is None:
@@ -73,9 +75,9 @@ class Spectrum():
 
     def _remove_outliers(self, starting_data: Union[np.ndarray, None] = None):
         if starting_data is None:
-            no_outliers, _ = outlier_removal(self.spectrum)
+            no_outliers = outlier_removal(self.spectrum)
         else:
-            no_outliers, _ = outlier_removal(starting_data)
+            no_outliers = outlier_removal(starting_data)
         return no_outliers
 
     def _smooth(self, starting_data: Union[np.ndarray, None] = None):
@@ -90,7 +92,7 @@ class Spectrum():
             contrem, continuum = double_line_nb(self.spectrum, self.wvl)
         else:
             contrem, continuum = double_line_nb(starting_data, self.wvl)
-        return contrem
+        return contrem, continuum
 
     def to_microns(self):
         if self._wavelength_units == "nm":

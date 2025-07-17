@@ -1,7 +1,7 @@
 # SpectralCube.py
 
 # Standard Libraries
-from typing import Union
+from typing import Union, Optional
 
 # External Imports
 import numpy as np
@@ -26,7 +26,13 @@ class SpectralCube():
         Spectral cube data where axis=2 is the spectral dimension.
     wvl: np.ndarray
         Wavelength values corresponding to axis=2.
-    init_pipeline: bool
+    pixel_mask: np.ndarray, optional
+        Pixels to be masked are =1 and valid pixels are =0.
+    spectral_resolution: Union[None, np.ndarray, float], optional.
+        Spectral resolution of dataset. Can either be a single value or an
+        array of values corresponding to spectral resolution of each band.
+        If None (default), a constant resolution will be calculated.
+    init_pipeline: bool, optional
         Switch to enable running the pipeline at initialization.
 
     Attributes
@@ -53,11 +59,13 @@ class SpectralCube():
         self,
         cube: np.ndarray,
         wvl: np.ndarray,
+        pixel_mask: Optional[np.ndarray] = None,
         spectral_resolution: Union[None, np.ndarray, float] = None,
         init_pipeline: bool = False
     ):
         self.cube = cube
         self.wvl = wvl
+        self.mask = pixel_mask
         if spectral_resolution is None:
             self.spec_res = (wvl.max() - wvl.min()) / wvl.size
         else:
@@ -109,6 +117,12 @@ class SpectralCube():
         step_runtime = time() - step_start
         pretty_print_runtime(step_runtime, "Continuum removal")
         return step[:, :, :, 0], step[:, :, :, 1]
+
+    def with_mask(self, attr: str):
+        data_nomask = getattr(self, attr)
+        data_withmask = data_nomask.copy()
+        data_withmask[self.mask == 1] = np.nan
+        return data_withmask
 
     def plot_test_spectrum(self):
         attr_list = ["cube", "no_outliers", "smoothed", "contrem"]

@@ -83,7 +83,7 @@ def calculate_center_from_fit(
     else:
         absorption_center = np.argmin(fitted_absorption)
         if (absorption_center == 0) or \
-           (absorption_center == absorption_spec.size):
+           (absorption_center == absorption_spec.size-1):
             return np.nan
         else:
             return absorption_wvl[absorption_center]
